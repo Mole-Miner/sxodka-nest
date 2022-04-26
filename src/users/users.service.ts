@@ -1,30 +1,36 @@
+import { from, Observable } from 'rxjs';
 import { Injectable } from '@nestjs/common';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
-export type User = {
-    id: number;
-    name: string;
-    username: string;
-    password: string;
-}
+import { User, UserDocument } from './user.schema';
 
 @Injectable()
 export class UsersService {
-    private readonly _users: User[] = [
-        {
-            id: 1,
-            name: 'Vlad',
-            username: 'Vladysalve',
-            password: 'qwrety123'
-        },
-        {
-            id: 2,
-            name: 'Android',
-            username: 'Andrey',
-            password: 'qwrety123'
-        }
-    ]
+    constructor(@InjectModel(User.name) private readonly _userModel: Model<UserDocument>) { }
 
-    async findOne(username: string): Promise<User | undefined> {
-        return this._users.find(user => user.username === username);
+    findAll(): Observable<User[]> {
+        return from(this._userModel.find().exec());
+    }
+
+    findById(id: string): Observable<User> {
+        return from(this._userModel.findById(id));
+    }
+
+    findOneByEmail(email: string): Observable<User> {
+        return from(this._userModel.findOne({ email }));
+    }
+
+    create(dto: any): Observable<User> {
+        const createdUser = new this._userModel(dto);
+        return from(createdUser.save());
+    }
+
+    findByIdAndUpdate(id: string, dto: any): Observable<User> {
+        return from(this._userModel.findByIdAndUpdate(id, dto, { new: false }));
+    }
+    
+    findByIdAndRemove(id: string): Observable<User> {
+        return from(this._userModel.findByIdAndRemove(id))
     }
 }

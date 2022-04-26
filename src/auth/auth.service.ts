@@ -1,15 +1,16 @@
 import { UsersService } from './../users/users.service';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class AuthService {
     constructor(private readonly _users: UsersService, private readonly _jwt: JwtService) { }
 
-    async validateUser(username: string, password: string): Promise<any> {
-        const user = await this._users.findOne(username);
+    async validateUser(email: string, password: string): Promise<any> {
+        const user = await lastValueFrom(this._users.findOneByEmail(email));
         if (user && user.password === password) {
-            const { password, username, ...rest } = user;
+            const { password, email, ...rest } = user;
             return rest;
         }
         return null;
