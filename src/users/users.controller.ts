@@ -1,8 +1,10 @@
 import { catchError, Observable, throwError } from 'rxjs';
-import { Body, Controller, Delete, Get, InternalServerErrorException, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, InternalServerErrorException, Param, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
 
 import { UsersService } from './users.service';
 import { User } from './user.schema';
+import { CreateUserDto } from './user.create.dto';
+import { UpdateUserDto } from './user.update.dto';
 
 @Controller('users')
 export class UsersController {
@@ -23,21 +25,23 @@ export class UsersController {
     }
 
     @Post()
-    create(@Body() dto: any): Observable<User> {
+    @UsePipes(new ValidationPipe({ transform: true }))
+    create(@Body() dto: CreateUserDto): Observable<User> {
         return this._users.create(dto).pipe(
             catchError((e) => throwError(() => new InternalServerErrorException(e)))
         );
     }
 
-    @Put()
-    findByIdAndUpdate(id: string, dto: any): Observable<User> {
+    @Put(':id')
+    @UsePipes(new ValidationPipe({ transform: true }))
+    findByIdAndUpdate(@Param('id') id: string, @Body() dto: UpdateUserDto): Observable<User> {
         return this._users.findByIdAndUpdate(id, dto).pipe(
             catchError((e) => throwError(() => new InternalServerErrorException(e)))
         );
     }
 
-    @Delete()
-    findByIdAndRemove(id: string): Observable<User> {
+    @Delete(':id')
+    findByIdAndRemove(@Param('id') id: string): Observable<User> {
         return this._users.findByIdAndRemove(id).pipe(
             catchError((e) => throwError(() => new InternalServerErrorException(e)))
         );

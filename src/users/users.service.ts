@@ -4,6 +4,8 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { User, UserDocument } from './user.schema';
+import { CreateUserDto } from './user.create.dto';
+import { UpdateUserDto } from './user.update.dto';
 
 @Injectable()
 export class UsersService {
@@ -21,12 +23,12 @@ export class UsersService {
         return from(this._userModel.findOne({ email }));
     }
 
-    create(dto: any): Observable<User> {
+    create(dto: CreateUserDto): Observable<User> {
         const createdUser = new this._userModel(dto);
         return from(createdUser.save());
     }
 
-    findByIdAndUpdate(id: string, dto: any): Observable<User> {
+    findByIdAndUpdate(id: string, dto: UpdateUserDto): Observable<User> {
         return from(this._userModel.findByIdAndUpdate(id, dto, { new: false }));
     }
     
