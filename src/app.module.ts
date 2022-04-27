@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module';
     UsersModule,
     AuthModule,
     ConfigModule.forRoot({
+      envFilePath: `.${process.env.NODE_ENV}.env`,
       load: [MongoConfigFactory]
     }),
     MongooseModule.forRootAsync({

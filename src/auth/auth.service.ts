@@ -1,27 +1,50 @@
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Observable, throwError, concatMap, from, catchError, map } from 'rxjs';
+import { compare, hash } from 'bcrypt';
+
+import { LoginDto } from './login.dto';
 import { UsersService } from './../users/users.service';
-import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { map, Observable, of, } from 'rxjs';
-import { User } from 'src/users/user.schema';
+import { JwtTokenService } from './jwt.token.service';
+import { SignupDto } from './signup.dto';
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly _users: UsersService, private readonly _jwt: JwtService) { }
+    constructor(
+        private readonly _users: UsersService,
+        private readonly _jwtToken: JwtTokenService
+    ) { }
 
-    validateUser(email: string, password: string): Observable<any> {
-        return this._users.findOneByEmail(email).pipe(
-            map((user: User) => {
-                if (user && user.password === password) {
-                    const { _id, email, firstname, lastname } = user;
-                    return { _id, email, firstname, lastname };
+    login(dto: LoginDto): Observable<any> {
+        return from(this._users.findOneByEmail(dto.email)).pipe(
+            concatMap((user) => {
+                if (!user) {
+                    return throwError(() => new BadRequestException());
                 }
-                return null;
-            })
-        );
+                return from(compare(dto.password, user.password)).pipe(
+                    concatMap((equal) => {
+                        if (!equal) {
+                            return throwError(() => new BadRequestException());
+                        }
+                        return from(this._jwtToken.generateTokens(dto.email, user._id)).pipe(
+                            concatMap((tokens) => from(this._jwtToken.saveRefreshToken(user._id, tokens.refreshToken)).pipe(
+                                map(() => ({ ...tokens, user }))
+                            ))
+                        )
+                    })
+                );
+            }),
+            catchError((e) => throwError(() => new InternalServerErrorException(e)))
+        )
     }
 
-    login(user: any): Observable<{ access_token: string }> {
-        const payload = { email: user.email, sub: user._id };
-        return of({ access_token: this._jwt.sign(payload) });
+    signup(dto: SignupDto): Observable<any> {
+        return from(this._users.findOneByEmail(dto.email)).pipe(
+            concatMap((user) => {
+                if (user) {
+                    return throwError(() => new BadRequestException());
+                }
+
+            })
+        )
     }
 }

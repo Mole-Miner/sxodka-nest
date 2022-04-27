@@ -25,7 +25,6 @@ export class UsersController {
     }
 
     @Post()
-    @UsePipes(new ValidationPipe({ transform: true }))
     create(@Body() dto: CreateUserDto): Observable<User> {
         return this._users.create(dto).pipe(
             catchError((e) => throwError(() => new InternalServerErrorException(e)))
@@ -33,7 +32,6 @@ export class UsersController {
     }
 
     @Put(':id')
-    @UsePipes(new ValidationPipe({ transform: true }))
     findByIdAndUpdate(@Param('id') id: string, @Body() dto: UpdateUserDto): Observable<User> {
         return this._users.findByIdAndUpdate(id, dto).pipe(
             catchError((e) => throwError(() => new InternalServerErrorException(e)))
