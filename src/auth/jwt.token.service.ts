@@ -1,8 +1,8 @@
 import { ConfigService } from '@nestjs/config';
-import { from, Observable, of, switchMap, catchError, throwError } from 'rxjs';
+import { from, Observable, of, switchMap } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 
 import { JwtToken, JwtTokenDocument } from './jwt.token.schema';
@@ -39,21 +39,16 @@ export class JwtTokenService {
                     return from(token.save());
                 }
                 return from(this._jwtToken.create({ userId, refreshToken })); 
-            }),
-            catchError((e) => throwError(() => new InternalServerErrorException(e)))
+            })
         );
     }
 
     removeRefreshToken(refreshToken: string): Observable<any> {
-        return from(this._jwtToken.deleteOne({ refreshToken })).pipe(
-            catchError((e) => throwError(() => new InternalServerErrorException(e)))
-        );
+        return from(this._jwtToken.deleteOne({ refreshToken }));
     }
 
-    findRefreshToken(refreshToken: string): Observable<any> {
-        return from(this._jwtToken.findOne({ refreshToken })).pipe(
-            catchError((e) => throwError(() => new InternalServerErrorException(e)))
-        );
+    findRefreshToken(refreshToken: string): Observable<JwtToken> {
+        return from(this._jwtToken.findOne({ refreshToken }));
     }
 
     validateAccessToken(accessToken: string): Observable<any> {
