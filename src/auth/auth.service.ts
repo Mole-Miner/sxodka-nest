@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
-import { Observable, throwError, concatMap, from, catchError, map, forkJoin } from 'rxjs';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Observable, throwError, concatMap, from, map, forkJoin, catchError } from 'rxjs';
 import { compare, hash } from 'bcrypt';
 
 import { LoginDto } from './login.dto';
@@ -18,65 +18,42 @@ export class AuthService {
         return this._users.findOneByEmail(dto.email).pipe(
             concatMap((user) => {
                 if (!user) {
-                    return throwError(() => new BadRequestException());
+                    return throwError(() => new BadRequestException('User with provided email does not exist'));
                 }
                 return from(compare(dto.password, user.password)).pipe(
                     concatMap((equal) => {
                         if (!equal) {
-                            return throwError(() => new BadRequestException());
+                            return throwError(() => new BadRequestException('Wrong password'))
                         }
                         return this._jwtToken.generateTokens(dto.email, user._id).pipe(
-                            concatMap((tokens) => {
-                                if (!tokens) {
-                                    return throwError(() => new BadRequestException());
-                                }
-                                return this._jwtToken.saveRefreshToken(user._id, tokens.refreshToken).pipe(
-                                    map((refreshToken) => {
-                                        if (!refreshToken) {
-                                            return throwError(() => new BadRequestException());
-                                        }
-                                        return { ...tokens, userId: user._id };
-                                    })
-                                );
-                            })
-                        )
+                            concatMap((tokens) => this._jwtToken.saveRefreshToken(user._id, tokens.refreshToken).pipe(
+                                map((refreshToken) => ({ ...tokens, userId: refreshToken.userId }))
+                            ))
+                        );
                     })
                 );
-            })
-        )
+            }),
+            catchError((e) => throwError(() => e))
+        );
     }
 
     signup(dto: SignupDto): Observable<any> {
         return this._users.findOneByEmail(dto.email).pipe(
             concatMap((user) => {
                 if (user) {
-                    return throwError(() => new BadRequestException());
+                    return throwError(() => new BadRequestException('User with provided email already exists'));
                 }
                 return from(hash(dto.password, 10)).pipe(
-                    concatMap((hash) => {
-                        if (!hash) {
-                            return throwError(() => new BadRequestException());
-                        }
-                        return this._users.create({ ...dto, password: hash }).pipe(
-                            concatMap((created) => {
-                                if (!created) {
-                                    return throwError(() => new BadRequestException());
-                                }
-                                return this._jwtToken.generateTokens(created.email, created._id).pipe(
-                                    concatMap((tokens) => {
-                                        if (!tokens) {
-                                            return throwError(() => new BadRequestException());
-                                        }
-                                        return this._jwtToken.saveRefreshToken(created._id, tokens.refreshToken).pipe(
-                                            map(() => ({ ...tokens, userId: created._id }))
-                                        );
-                                    })
-                                );
-                            })
-                        )
-                    })
+                    concatMap((hash) => this._users.create({ ...dto, password: hash }).pipe(
+                        concatMap((created) => this._jwtToken.generateTokens(created.email, created._id).pipe(
+                            concatMap((tokens) => this._jwtToken.saveRefreshToken(created._id, tokens.refreshToken).pipe(
+                                map((refreshToken) => ({ ...tokens, userId: refreshToken.userId }))
+                            ))
+                        ))
+                    ))
                 )
-            })
+            }),
+            catchError((e) => throwError(() => e))
         );
     }
 
@@ -96,22 +73,19 @@ export class AuthService {
                         }
                         return this._jwtToken.generateTokens(user.email, user._id).pipe(
                             concatMap((tokens) => this._jwtToken.saveRefreshToken(user._id, tokens.refreshToken).pipe(
-                                map(() => {
-                                    const { _id, email, firstname, lastname } = user;
-                                    return { ...tokens, _id, email, firstname, lastname };
-                                })
+                                map((refreshToken) => ({ ...tokens, userId: refreshToken.userId }))
                             ))
-                        )
+                        );
                     })
                 )
             }),
-            catchError((e) => throwError(() => new InternalServerErrorException(e)))
+            catchError((e) => throwError(() => e))
         );
     }
 
     logout(refreshToken: string): Observable<any> {
         return this._jwtToken.removeRefreshToken(refreshToken).pipe(
-            catchError((e) => throwError(() => new InternalServerErrorException(e)))
+            catchError((e) => throwError(() => e))
         );
     }
 }

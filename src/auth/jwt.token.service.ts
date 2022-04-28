@@ -1,8 +1,8 @@
 import { ConfigService } from '@nestjs/config';
-import { from, Observable, of, concatMap, forkJoin, map, catchError } from 'rxjs';
+import { from, Observable, concatMap, forkJoin, map, catchError, throwError } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Model } from 'mongoose';
 
 import { JwtToken, JwtTokenDocument } from './jwt.token.schema';
@@ -30,7 +30,7 @@ export class JwtTokenService {
             ))
         ]).pipe(
             map(([accessToken, refreshToken]) => ({ accessToken, refreshToken })),
-            catchError(() => of(null))
+            catchError((e) => throwError(() => new InternalServerErrorException(e)))
         );
     }
 
@@ -43,25 +43,25 @@ export class JwtTokenService {
                 }
                 return from(this._jwtToken.create({ userId, refreshToken }));
             }),
-            catchError(() => of(null))
+            catchError((e) => throwError(() => new InternalServerErrorException(e)))
         );
     }
 
     removeRefreshToken(refreshToken: string): Observable<any> {
         return from(this._jwtToken.deleteOne({ refreshToken })).pipe(
-            catchError(() => of(null))
+            catchError((e) => throwError(() => new InternalServerErrorException(e)))
         );
     }
 
     findRefreshToken(refreshToken: string): Observable<JwtToken> {
         return from(this._jwtToken.findOne({ refreshToken })).pipe(
-            catchError(() => of(null))
+            catchError((e) => throwError(() => new InternalServerErrorException(e)))
         );
     }
 
     validateRefreshToken(refreshToken: string): Observable<any> {
         return from(this._jwt.verifyAsync(refreshToken, { secret: this._config.get<string>('jwt.refreshSecret') })).pipe(
-            catchError(() => of(null))
+            catchError((e) => throwError(() => new InternalServerErrorException(e)))
         );
     }
 }
