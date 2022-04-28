@@ -19,7 +19,10 @@ export class JwtTokenService {
         return forkJoin([
             from(this._jwt.signAsync(
                 { email, sub: id },
-                { expiresIn: this._config.get<string>('jwt.secretExpiresIn') }
+                {
+                    secret: this._config.get<string>('jwt.secret'),
+                    expiresIn: this._config.get<string>('jwt.secretExpiresIn')
+                }
             )),
             from(this._jwt.signAsync(
                 { email, sub: id },
@@ -63,5 +66,11 @@ export class JwtTokenService {
         return from(this._jwt.verifyAsync(refreshToken, { secret: this._config.get<string>('jwt.refreshSecret') })).pipe(
             catchError((e) => throwError(() => new InternalServerErrorException(e)))
         );
+    }
+
+    validateAccessToken(accessToken: string): Observable<any> {
+        return from(this._jwt.verifyAsync(accessToken, { secret: this._config.get<string>('jwt.secret') })).pipe(
+            catchError((e) => throwError(() => new InternalServerErrorException(e)))
+        )
     }
 }

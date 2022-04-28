@@ -1,4 +1,4 @@
-import { from, Observable, catchError, of, throwError } from 'rxjs';
+import { from, Observable, catchError, throwError } from 'rxjs';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
