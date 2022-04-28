@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config';
 
-export const JwtConfigFactory = registerAs('jwt', () => ({
+export const JwtConfigFactory = registerAs('jwt', async () => ({
   algorithm: process.env.JWT_ALGORITHM,
   strategy: process.env.JWT_STRATEGY,
   secret: process.env.JWT_SECRET,

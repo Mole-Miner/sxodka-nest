@@ -11,13 +11,13 @@ import { UsersController } from './users.controller';
     MongooseModule.forFeatureAsync([
       {
         name: User.name,
-        useFactory: () => UserSchema
+        useFactory: async () => UserSchema
       }
     ]),
-    forwardRef(() => AuthModule)
+    forwardRef(async () => AuthModule)
   ],
   providers: [UsersService],
+  controllers: [UsersController],
   exports: [UsersService],
-  controllers: [UsersController]
 })
 export class UsersModule { }
