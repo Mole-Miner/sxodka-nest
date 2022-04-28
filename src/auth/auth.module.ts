@@ -1,19 +1,20 @@
 import { JwtToken, JwtTokenSchema } from './jwt.token.schema';
 import { MongooseModule } from '@nestjs/mongoose';
-import { JwtStrategy } from './jwt.strategy';
-import { UsersModule } from './../users/users.module';
-import { Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { Module, forwardRef } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthController } from './auth.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtConfigFactory } from 'src/config/jwt.config';
+
+import { JwtStrategy } from './jwt.strategy';
+import { UsersModule } from './../users/users.module';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { JwtConfigFactory } from '../config/jwt.config';
 import { JwtTokenService } from './jwt.token.service';
 
 @Module({
     imports: [
-        UsersModule,
+        forwardRef(() => UsersModule),
         ConfigModule.forFeature(JwtConfigFactory),
         MongooseModule.forFeatureAsync([
             {
@@ -23,14 +24,15 @@ import { JwtTokenService } from './jwt.token.service';
         ]),
         PassportModule.registerAsync({
             imports: [ConfigModule],
-            useFactory: async (config: ConfigService) => ({
+            useFactory: (config: ConfigService) => ({
+                session: false,
                 defaultStrategy: config.get<string>('jwt.strategy')
             }),
             inject: [ConfigService]
         }),
         JwtModule.registerAsync({
             imports: [ConfigModule],
-            useFactory: async (config: ConfigService) => ({
+            useFactory: (config: ConfigService) => ({
                 secret: config.get<string>('jwt.secret'),
             }),
             inject: [ConfigService],

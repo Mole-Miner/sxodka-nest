@@ -1,11 +1,13 @@
+import { JwtAuthGuard } from './../auth/jwt.auth.guard';
 import { catchError, Observable, throwError } from 'rxjs';
-import { Body, Controller, Delete, Get, InternalServerErrorException, Param, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, InternalServerErrorException, Param, Post, Put, UseGuards } from '@nestjs/common';
 
 import { UsersService } from './users.service';
 import { User } from './user.schema';
 import { CreateUserDto } from './user.create.dto';
 import { UpdateUserDto } from './user.update.dto';
 
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
     constructor(private readonly _users: UsersService) { }
