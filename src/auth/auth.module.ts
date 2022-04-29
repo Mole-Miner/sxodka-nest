@@ -1,6 +1,5 @@
 import { MongooseModule } from '@nestjs/mongoose';
 import { Module, forwardRef } from '@nestjs/common';
-import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
@@ -22,14 +21,6 @@ import { CryptoService } from './crypto.service';
                 useFactory: async () => JwtTokenSchema
             }
         ]),
-        PassportModule.registerAsync({
-            imports: [ConfigModule],
-            useFactory: async (config: ConfigService) => ({
-                session: false,
-                defaultStrategy: config.get<string>('jwt.strategy')
-            }),
-            inject: [ConfigService]
-        }),
         JwtModule.registerAsync({
             imports: [ConfigModule],
             useFactory: async (config: ConfigService) => ({
@@ -51,7 +42,6 @@ import { CryptoService } from './crypto.service';
         AuthService,
         JwtTokenService,
         CryptoService,
-        PassportModule,
         JwtModule
     ]
 })
