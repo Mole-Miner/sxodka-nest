@@ -10,6 +10,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtConfigFactory } from '../config/jwt.config';
 import { JwtTokenService } from './jwt.token.service';
+import { CryptoService } from './crypto.service';
 
 @Module({
     imports: [
@@ -42,12 +43,14 @@ import { JwtTokenService } from './jwt.token.service';
     ],
     providers: [
         AuthService,
-        JwtTokenService
+        JwtTokenService,
+        CryptoService
     ],
     controllers: [AuthController],
     exports: [
         AuthService,
         JwtTokenService,
+        CryptoService,
         PassportModule,
         JwtModule
     ]
