@@ -1,5 +1,5 @@
 import { ConfigService } from '@nestjs/config';
-import { from, Observable, concatMap, forkJoin, map, catchError, throwError } from 'rxjs';
+import { from, Observable, forkJoin, map, catchError, throwError, switchMap } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
@@ -39,7 +39,7 @@ export class JwtTokenService {
 
     saveRefreshToken(userId: string, refreshToken: string): Observable<JwtToken> {
         return from(this._jwtToken.findOne({ userId })).pipe(
-            concatMap((token) => {
+            switchMap((token) => {
                 if (token) {
                     token.refreshToken = refreshToken;
                     return from(token.save());
