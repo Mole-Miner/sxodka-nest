@@ -1,6 +1,5 @@
 import { catchError, Observable, throwError } from 'rxjs';
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
-import { ThrottlerGuard } from '@nestjs/throttler';
 
 import { UserService } from './user.service';
 import { User } from './user.schema';
