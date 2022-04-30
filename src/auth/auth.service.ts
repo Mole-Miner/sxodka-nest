@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { Observable, throwError, concatMap, from, map, forkJoin, catchError } from 'rxjs';
+import { Observable, throwError, concatMap, from, map, forkJoin } from 'rxjs';
 
 import { LoginDto } from './login.dto';
 import { SignupDto } from './signup.dto';
 import { UsersService } from './../users/users.service';
 import { JwtTokenService } from './jwt.token.service';
-import { CryptoService } from './crypto.service';
+import { CryptoService } from '../crypto/crypto.service';
 
 @Injectable()
 export class AuthService {
@@ -33,8 +33,7 @@ export class AuthService {
                         );
                     })
                 );
-            }),
-            catchError((e) => throwError(() => e))
+            })
         );
     }
 
@@ -80,14 +79,11 @@ export class AuthService {
                         );
                     })
                 )
-            }),
-            catchError((e) => throwError(() => e))
+            })
         );
     }
 
     logout(refreshToken: string): Observable<any> {
-        return this._jwtToken.removeRefreshToken(refreshToken).pipe(
-            catchError((e) => throwError(() => e))
-        );
+        return this._jwtToken.removeRefreshToken(refreshToken);
     }
 }

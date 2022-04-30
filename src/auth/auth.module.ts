@@ -9,11 +9,12 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtConfigFactory } from '../config/jwt.config';
 import { JwtTokenService } from './jwt.token.service';
-import { CryptoService } from './crypto.service';
+import { CryptoModule } from './../crypto/crypto.module';
 
 @Module({
     imports: [
         forwardRef(async () => UsersModule),
+        CryptoModule,
         ConfigModule.forFeature(JwtConfigFactory),
         MongooseModule.forFeatureAsync([
             {
@@ -35,13 +36,11 @@ import { CryptoService } from './crypto.service';
     providers: [
         AuthService,
         JwtTokenService,
-        CryptoService
     ],
     controllers: [AuthController],
     exports: [
         AuthService,
         JwtTokenService,
-        CryptoService,
         JwtModule
     ]
 })
