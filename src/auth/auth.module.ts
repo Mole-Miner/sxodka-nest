@@ -3,7 +3,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import { UsersModule } from './../users/users.module';
+import { UserModule } from '../user/user.module';
 import { JwtToken, JwtTokenSchema } from './jwt.token.schema';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
@@ -13,7 +13,7 @@ import { CryptoModule } from './../crypto/crypto.module';
 
 @Module({
     imports: [
-        forwardRef(async () => UsersModule),
+        forwardRef(async () => UserModule),
         CryptoModule,
         ConfigModule.forFeature(JwtConfigFactory),
         MongooseModule.forFeatureAsync([

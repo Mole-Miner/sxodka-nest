@@ -3,16 +3,16 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { MongoConfigFactory } from './config/mongo.config';
-import { UsersModule } from './users/users.module';
+import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
-import { RolesModule } from './roles/roles.module';
+import { RoleModule } from './role/role.module';
 import { CryptoModule } from './crypto/crypto.module';
 
 @Module({
   imports: [
-    UsersModule,
+    UserModule,
     AuthModule,
-    RolesModule,
+    RoleModule,
     CryptoModule,
     ConfigModule.forRoot({
       envFilePath: `.env.${process.env.NODE_ENV}`,
@@ -27,4 +27,4 @@ import { CryptoModule } from './crypto/crypto.module';
     }),
   ]
 })
-export class AppModule {}
+export class AppModule { }

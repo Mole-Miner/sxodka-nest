@@ -8,7 +8,7 @@ import { CreateUserDto } from './user.create.dto';
 import { UpdateUserDto } from './user.update.dto';
 
 @Injectable()
-export class UsersService {
+export class UserService {
     constructor(@InjectModel(User.name) private readonly _userModel: Model<UserDocument>) { }
 
     findAll(): Observable<User[]> {

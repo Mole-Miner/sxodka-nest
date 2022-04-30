@@ -3,20 +3,20 @@ import { Observable, throwError, concatMap, from, map, forkJoin } from 'rxjs';
 
 import { LoginDto } from './login.dto';
 import { SignupDto } from './signup.dto';
-import { UsersService } from './../users/users.service';
+import { UserService } from '../user/user.service';
 import { JwtTokenService } from './jwt.token.service';
 import { CryptoService } from '../crypto/crypto.service';
 
 @Injectable()
 export class AuthService {
     constructor(
-        private readonly _users: UsersService,
+        private readonly _user: UserService,
         private readonly _jwtToken: JwtTokenService,
         private readonly _crypto: CryptoService
     ) { }
 
     login({ email, password }: LoginDto): Observable<any> {
-        return this._users.findOneByEmail(email).pipe(
+        return this._user.findOneByEmail(email).pipe(
             concatMap((user) => {
                 if (!user) {
                     return throwError(() => new BadRequestException('User with provided email does not exist'));
@@ -38,14 +38,14 @@ export class AuthService {
     }
 
     signup({ email, password, firstname, lastname }: SignupDto): Observable<any> {
-        return this._users.findOneByEmail(email).pipe(
+        return this._user.findOneByEmail(email).pipe(
             concatMap((user) => {
                 if (user) {
                     return throwError(() => new BadRequestException('User with provided email already exists'))
                 }
                 return from(this._crypto.genSalt().pipe(
                     concatMap((salt) => this._crypto.hash(password, salt).pipe(
-                        concatMap((passwordHash) => this._users.create({ email, firstname, lastname, password: passwordHash }).pipe(
+                        concatMap((passwordHash) => this._user.create({ email, firstname, lastname, password: passwordHash }).pipe(
                             concatMap((created) => this._jwtToken.generateTokens(created.email, created._id).pipe(
                                 concatMap(({ accessToken, refreshToken }) => this._jwtToken.saveRefreshToken(created._id, refreshToken).pipe(
                                     map(({ userId }) => ({ accessToken, refreshToken, userId }))
@@ -67,7 +67,7 @@ export class AuthService {
                 if (!payload || !token) {
                     return throwError(() => new UnauthorizedException());
                 }
-                return this._users.findById(token.userId).pipe(
+                return this._user.findById(token.userId).pipe(
                     concatMap((user) => {
                         if (!user) {
                             return throwError(() => new UnauthorizedException());
