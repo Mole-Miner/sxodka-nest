@@ -1,10 +1,10 @@
 import { Reflector } from '@nestjs/core';
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { iif, map, Observable, tap, catchError, throwError, from, switchMap } from 'rxjs';
 import { ForbiddenError } from '@casl/ability';
 
 import { AbilityFactory } from './ability.factory';
-import { CHECK_ABILITY, RequiredRule } from './ability.decoretor';
+import { CHECK_ABILITY, RequiredRule } from './ability.decorator';
 
 @Injectable()
 export class AbilityGuard implements CanActivate {
@@ -13,16 +13,16 @@ export class AbilityGuard implements CanActivate {
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         const rules = this._reflrector.get<RequiredRule[]>(CHECK_ABILITY, context.getHandler()) ?? [];
         const { user } = context.switchToHttp().getRequest();
-        const ability = this._casl.defineAbility(user);
-        console.log(rules, user);
-        try {
-            rules.forEach((rule) => ForbiddenError.from(ability).throwUnlessCan(rule.aciton, rule.subject));
-            return true;
-        } catch (error) {
-            if (error instanceof ForbiddenError) {
-                throw new ForbiddenException(error.message);
-            }
-            throw error;
-        }
+        return iif(() => !!rules.length && !!user,
+            this._casl.defineAbility(user).pipe(
+                switchMap((ability) => from(rules).pipe(
+                    tap(({ action, subject }) => ForbiddenError.from(ability).throwUnlessCan(action, subject))
+                ))
+            ),
+            throwError(() => new ForbiddenException())
+        ).pipe(
+            map(() => true),
+            catchError((e) => throwError(() => new ForbiddenException(e.message)))
+        );
     }
 }

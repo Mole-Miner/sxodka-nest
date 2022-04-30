@@ -1,5 +1,7 @@
+import { Observable, of, switchMap, catchError, throwError } from 'rxjs';
 import { Ability, AbilityBuilder, AbilityClass, ExtractSubjectType, InferSubjects } from "@casl/ability";
-import { Injectable } from "@nestjs/common";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
+
 import { User } from "src/user/user.schema";
 
 export enum Action {
@@ -16,14 +18,18 @@ export type AppAbility = Ability<[Action, Subjects]>;
 
 @Injectable()
 export class AbilityFactory {
-    defineAbility(user: User) {
-        const { can, cannot, build } = new AbilityBuilder(Ability as AbilityClass<AppAbility>);
-        if (user.isAdmin) {
-            can(Action.Manage, User);
-        } else {
-            can(Action.Read, 'all'),
-            cannot(Action.Create, User).because('You are not admin');
-        }
-        return build({ detectSubjectType: (item) => item.constructor as ExtractSubjectType<Subjects> });
+    defineAbility({ isAdmin }: User): Observable<AppAbility> {
+        return of(new AbilityBuilder(Ability as AbilityClass<AppAbility>)).pipe(
+            switchMap(({ can, cannot, build }) => {
+                if (isAdmin) {
+                    can(Action.Manage, User);
+                } else {
+                    can(Action.Read, User);
+                    cannot([Action.Create, Action.Update, Action.Delete], User).because('You have no permission for managing users');
+                }
+                return of(build({ detectSubjectType: (item) => item.constructor as ExtractSubjectType<Subjects> }))
+            }),
+            catchError((e) => throwError(() => new InternalServerErrorException(e)))
+        );
     }
 }

@@ -3,7 +3,7 @@ import { User } from '../user/user.schema';
 import { Action, Subjects } from './ability.factory';
 
 export interface RequiredRule {
-    aciton: Action;
+    action: Action;
     subject: Subjects;
 }
 
@@ -12,21 +12,21 @@ export const CHECK_ABILITY = 'check_ability';
 export const CheckAbility = (...requirements: RequiredRule[]) => SetMetadata(CHECK_ABILITY, requirements);
 
 export class ReadUserAbility implements RequiredRule {
-    aciton: Action = Action.Read;
+    action: Action = Action.Read;
     subject: Subjects = User;
 }
 
 export class CreateUserAbility implements RequiredRule {
-    aciton: Action = Action.Create;
+    action: Action = Action.Create;
     subject: Subjects = User;
 }
 
 export class UpdateUserAbility implements RequiredRule {
-    aciton: Action = Action.Update;
+    action: Action = Action.Update;
     subject: Subjects = User;
 }
 
 export class DeleteUserAbility implements RequiredRule {
-    aciton: Action = Action.Delete;
+    action: Action = Action.Delete;
     subject: Subjects = User;
 }
