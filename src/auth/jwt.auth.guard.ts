@@ -9,7 +9,7 @@ export class JwtAuthGuard implements CanActivate {
 
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         const req = context.switchToHttp().getRequest();
-        return iif(() => req,
+        return iif(() => !!req,
             of(req).pipe(
                 switchMap((req) => {
                     const authHeader = req.headers.authorization as string;
@@ -22,7 +22,7 @@ export class JwtAuthGuard implements CanActivate {
                                 return !!req.user;
                             })
                         ),
-                        throwError(() => new UnauthorizedException())
+                        of(false)
                     )
                 })
             ),

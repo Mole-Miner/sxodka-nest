@@ -1,4 +1,3 @@
-import { CreateUserAbility, UpdateUserAbility, DeleteUserAbility } from '../ability/ability.decorator';
 import { catchError, Observable, throwError } from 'rxjs';
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 
@@ -9,6 +8,7 @@ import { UpdateUserDto } from './user.update.dto';
 import { JwtAuthGuard } from '../auth/jwt.auth.guard';
 import { CheckAbility, ReadUserAbility } from '../ability/ability.decorator';
 import { AbilityGuard } from '../ability/ability.guard';
+import { CreateUserAbility, UpdateUserAbility, DeleteUserAbility } from '../ability/ability.decorator';
 
 @UseGuards(JwtAuthGuard, AbilityGuard)
 @Controller('user')
