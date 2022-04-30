@@ -15,17 +15,17 @@ export class JwtTokenService {
         private readonly _config: ConfigService
     ) { }
 
-    generateTokens(email: string, id: string): Observable<{ accessToken: string, refreshToken: string }> {
+    generateTokens(email: string, id: string, isAdmin: boolean): Observable<{ accessToken: string, refreshToken: string }> {
         return forkJoin([
             from(this._jwt.signAsync(
-                { email, sub: id },
+                { email, sub: id, isAdmin },
                 {
                     secret: this._config.get<string>('jwt.secret'),
                     expiresIn: this._config.get<string>('jwt.secretExpiresIn')
                 }
             )),
             from(this._jwt.signAsync(
-                { email, sub: id },
+                { email, sub: id, isAdmin },
                 {
                     secret: this._config.get<string>('jwt.refreshSecret'),
                     expiresIn: this._config.get<string>('jwt.refreshSecretExpiresIn')

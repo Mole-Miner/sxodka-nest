@@ -1,3 +1,4 @@
+import { AbilityModule } from './../ability/ability.module';
 import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
@@ -8,13 +9,14 @@ import { UserController } from './user.controller';
 
 @Module({
   imports: [
+    forwardRef(async () => AuthModule),
+    AbilityModule,
     MongooseModule.forFeatureAsync([
       {
         name: User.name,
         useFactory: async () => UserSchema
       }
-    ]),
-    forwardRef(async () => AuthModule)
+    ])
   ],
   providers: [UserService],
   controllers: [UserController],

@@ -26,7 +26,7 @@ export class AuthService {
                         if (!equal) {
                             return throwError(() => new BadRequestException('Wrong password'))
                         }
-                        return this._jwtToken.generateTokens(email, user._id).pipe(
+                        return this._jwtToken.generateTokens(email, user._id, user.isAdmin).pipe(
                             concatMap(({ accessToken, refreshToken }) => this._jwtToken.saveRefreshToken(user._id, refreshToken).pipe(
                                 map(({ userId }) => ({ accessToken, refreshToken, userId }))
                             ))
@@ -45,8 +45,8 @@ export class AuthService {
                 }
                 return from(this._crypto.genSalt().pipe(
                     concatMap((salt) => this._crypto.hash(password, salt).pipe(
-                        concatMap((passwordHash) => this._user.create({ email, firstname, lastname, password: passwordHash }).pipe(
-                            concatMap((created) => this._jwtToken.generateTokens(created.email, created._id).pipe(
+                        concatMap((passwordHash) => this._user.create({ email, firstname, lastname, password: passwordHash, isAdmin: true }).pipe(
+                            concatMap((created) => this._jwtToken.generateTokens(created.email, created._id, created.isAdmin).pipe(
                                 concatMap(({ accessToken, refreshToken }) => this._jwtToken.saveRefreshToken(created._id, refreshToken).pipe(
                                     map(({ userId }) => ({ accessToken, refreshToken, userId }))
                                 ))
@@ -72,7 +72,7 @@ export class AuthService {
                         if (!user) {
                             return throwError(() => new UnauthorizedException());
                         }
-                        return this._jwtToken.generateTokens(user.email, user._id).pipe(
+                        return this._jwtToken.generateTokens(user.email, user._id, user.isAdmin).pipe(
                             concatMap(({ accessToken, refreshToken }) => this._jwtToken.saveRefreshToken(user._id, refreshToken).pipe(
                                 map(({ userId }) => ({ accessToken, refreshToken, userId }))
                             ))

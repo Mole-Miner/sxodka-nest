@@ -17,7 +17,10 @@ export class JwtAuthGuard implements CanActivate {
                     const accessToken = authHeader.split(' ')[1];
                     return iif(() => baerer === 'Bearer' && !!accessToken,
                         this._jwtToken.validateAccessToken(accessToken).pipe(
-                            map((payload) => !!payload)
+                            map((payload) => {
+                                req.user = payload;
+                                return !!req.user;
+                            })
                         ),
                         throwError(() => new UnauthorizedException())
                     )

@@ -3,4 +3,5 @@ export class UpdateUserDto {
     readonly lastname!: string;
     readonly email!: string;
     readonly password!: string;
+    readonly isAdmin!: boolean;
 }
